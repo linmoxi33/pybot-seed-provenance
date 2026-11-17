@@ -1,0 +1,309 @@
+#!/usr/bin/env python3
+"""pybot-seed-provenance: measure what PyBot's --seed actually changes.
+
+Runs a corpus of prompts through `python -m pybot -s <seed> -v` for several
+seeds, pairs every reply with the `[module: ... | N ms]` line PyBot writes to
+stderr, and classifies each prompt as:
+
+  stable        same reply and same module under every seed
+  wording-only  same module, different wording  (this is all the README claims)
+  module-only   different module, identical text (silent reassignment)
+  module-and-text  different module and different text
+
+Exit codes: 0 = no drift, 1 = drift found, 2 = usage / input / runner error.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import shlex
+import statistics
+import subprocess
+import sys
+
+VERSION = "1.0.0"
+MODULE_LINE = re.compile(r"^\[module: (?P<name>.+?) \| (?P<ms>\d+) ms\]$")
+FALLBACK_REPLY = "Hello!"
+
+
+class UsageError(Exception):
+    """Anything that must map to exit code 2."""
+
+
+def read_corpus(path):
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            raw = handle.read().splitlines()
+    except OSError as error:
+        raise UsageError("cannot read corpus %s: %s" % (path, error))
+    prompts = [line.strip() for line in raw]
+    prompts = [line for line in prompts if line and not line.startswith("#")]
+    if not prompts:
+        raise UsageError("corpus %s has no prompts" % path)
+    return prompts
+
+
+def parse_seeds(text):
+    seeds = []
+    for part in text.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        try:
+            seeds.append(int(part))
+        except ValueError:
+            raise UsageError("--seeds takes integers separated by commas: %r" % text)
+    if not seeds:
+        raise UsageError("--seeds needs at least one integer")
+    return seeds
+
+
+def module_files(pybot_root):
+    """Module files that exist on disk, without importing anything."""
+    directory = os.path.join(pybot_root, "bot", "modules")
+    try:
+        names = os.listdir(directory)
+    except OSError:
+        return None
+    return sorted(n[:-3] for n in names if n.endswith(".py") and n != "__init__.py")
+
+
+def run_once(root, runner, seed, prompts, timeout):
+    command = shlex.split(runner) + ["-s", str(seed), "-v"]
+    payload = "\n".join(prompts) + "\n"
+    try:
+        proc = subprocess.run(
+            command, cwd=root, input=payload, capture_output=True,
+            text=True, timeout=timeout,
+        )
+    except FileNotFoundError as error:
+        raise UsageError("runner not found: %s" % error)
+    except subprocess.TimeoutExpired:
+        raise UsageError("runner timed out after %ss for seed %s" % (timeout, seed))
+    if proc.returncode != 0:
+        tail = (proc.stderr or "").strip().splitlines()[-3:]
+        raise UsageError("runner exited %s for seed %s: %s"
+                         % (proc.returncode, seed, " | ".join(tail)))
+
+    replies = [line for line in proc.stdout.splitlines() if line.strip()]
+    modules = []
+    for line in proc.stderr.splitlines():
+        match = MODULE_LINE.match(line.strip())
+        if match:
+            modules.append((match.group("name"), int(match.group("ms"))))
+    if len(replies) != len(prompts):
+        raise UsageError("seed %s: %d replies for %d prompts"
+                         % (seed, len(replies), len(prompts)))
+    if len(modules) != len(prompts):
+        raise UsageError("seed %s: %d module lines for %d prompts (is -v supported?)"
+                         % (seed, len(modules), len(prompts)))
+    return [(reply, name, ms) for reply, (name, ms) in zip(replies, modules)]
+
+
+def classify(replies, modules):
+    same_text = len(set(replies)) == 1
+    same_module = len(set(modules)) == 1
+    if same_text and same_module:
+        return "stable"
+    if same_module:
+        return "wording-only"
+    if same_text:
+        return "module-only"
+    return "module-and-text"
+
+
+def percentile(values, fraction):
+    if not values:
+        return None
+    ordered = sorted(values)
+    index = min(len(ordered) - 1, max(0, int(round(fraction * (len(ordered) - 1)))))
+    return ordered[index]
+
+
+def audit(corpus_path, seeds, repeat, root, runner, timeout):
+    prompts = read_corpus(corpus_path)
+    if not os.path.isdir(root):
+        raise UsageError("--pybot-root is not a directory: %s" % root)
+    if not os.path.isdir(os.path.join(root, "bot")):
+        raise UsageError("--pybot-root has no bot/ package: %s" % root)
+
+    runs = {}
+    for seed in seeds:
+        for attempt in range(repeat):
+            runs[(seed, attempt)] = run_once(root, runner, seed, prompts, timeout)
+
+    records = []
+    repeat_mismatch = 0
+    for index, prompt in enumerate(prompts):
+        observations = []
+        for seed in seeds:
+            for attempt in range(repeat):
+                reply, module, ms = runs[(seed, attempt)][index]
+                observations.append({"seed": seed, "attempt": attempt,
+                                     "reply": reply, "module": module, "ms": ms})
+        per_seed = {}
+        for seed in seeds:
+            texts = {runs[(seed, a)][index][0] for a in range(repeat)}
+            mods = {runs[(seed, a)][index][1] for a in range(repeat)}
+            if len(texts) > 1 or len(mods) > 1:
+                per_seed[str(seed)] = {"reply_variants": len(texts),
+                                       "module_variants": len(mods)}
+        repeat_mismatch += 1 if per_seed else 0
+
+        replies = [o["reply"] for o in observations]
+        modules = [o["module"] for o in observations]
+        kind = classify(replies, modules)
+        records.append({
+            "index": index,
+            "text": prompt,
+            "class": kind,
+            "distinct_replies": len(set(replies)),
+            "distinct_modules": len(set(modules)),
+            "modules": sorted(set(modules)),
+            "replies": sorted(set(replies)),
+            "fallback_hello": all(r == FALLBACK_REPLY for r in replies),
+            "repeat_mismatch": per_seed,
+        })
+
+    stats = {}
+    for record in records:
+        for observation in [runs[(s, a)][record["index"]]
+                            for s in seeds for a in range(repeat)]:
+            name, ms = observation[1], observation[2]
+            entry = stats.setdefault(name, {"wins": 0, "prompts": set(), "ms": []})
+            entry["wins"] += 1
+            entry["prompts"].add(record["index"])
+            entry["ms"].append(ms)
+
+    on_disk = module_files(root)
+    seen = {record["modules"][0] if len(record["modules"]) == 1 else None for record in records}
+    used = set(stats)
+    never_seen = sorted(set(on_disk or []) - used)
+
+    counts = {}
+    for record in records:
+        counts[record["class"]] = counts.get(record["class"], 0) + 1
+    drifted = len(records) - counts.get("stable", 0)
+    return {
+        "tool": "pybot-seed-provenance",
+        "version": VERSION,
+        "corpus": {"path": corpus_path, "prompts": len(prompts)},
+        "seeds": seeds,
+        "repeat": repeat,
+        "runner": runner,
+        "summary": {
+            "prompts": len(records),
+            "observations": len(records) * len(seeds) * repeat,
+            "classes": counts,
+            "drifted": drifted,
+            "stability_rate": round(counts.get("stable", 0) / len(records), 4),
+            "wording_only_rate": round(counts.get("wording-only", 0) / len(records), 4),
+            "module_churn_rate": round(
+                (counts.get("module-only", 0) + counts.get("module-and-text", 0)) / len(records), 4),
+            "fallback_hello": sum(1 for r in records if r["fallback_hello"]),
+            "repeat_mismatch": repeat_mismatch,
+            "distinct_modules_seen": len(used),
+            "module_files_on_disk": None if on_disk is None else len(on_disk),
+        },
+        "modules": [
+            {
+                "module": name,
+                "wins": entry["wins"],
+                "prompts": len(entry["prompts"]),
+                "median_ms": int(statistics.median(entry["ms"])),
+                "p95_ms": percentile(entry["ms"], 0.95),
+            }
+            for name, entry in sorted(stats.items(), key=lambda kv: (-kv[1]["wins"], kv[0]))
+        ],
+        "modules_never_seen": never_seen,
+        "prompts": records,
+    }
+
+
+def render_text(report):
+    summary = report["summary"]
+    lines = []
+    lines.append("pybot-seed-provenance %s" % report["version"])
+    lines.append("corpus: %s (%d prompts)" % (report["corpus"]["path"], summary["prompts"]))
+    lines.append("seeds: %s x %d repeat(s) = %d observations"
+                 % (",".join(str(s) for s in report["seeds"]),
+                    report["repeat"], summary["observations"]))
+    lines.append("")
+    lines.append("stability    %.1f%%  (%d/%d prompts identical under every seed)"
+                 % (100 * summary["stability_rate"], summary["classes"].get("stable", 0),
+                    summary["prompts"]))
+    lines.append("wording-only %.1f%%  (%d)  <- all the README claims"
+                 % (100 * summary["wording_only_rate"],
+                    summary["classes"].get("wording-only", 0)))
+    lines.append("module churn %.1f%%  (%d)  (%d module-only + %d module-and-text)"
+                 % (100 * summary["module_churn_rate"],
+                    summary["classes"].get("module-only", 0) + summary["classes"].get("module-and-text", 0),
+                    summary["classes"].get("module-only", 0),
+                    summary["classes"].get("module-and-text", 0)))
+    if summary["fallback_hello"]:
+        lines.append("fallback     %d prompt(s) answered with the interface's %r fallback"
+                     % (summary["fallback_hello"], FALLBACK_REPLY))
+    if summary["repeat_mismatch"]:
+        lines.append("WARNING      %d prompt(s) did not reproduce a single seed"
+                     % summary["repeat_mismatch"])
+    if summary["module_files_on_disk"] is not None:
+        lines.append("modules      %d seen / %d on disk"
+                     % (summary["distinct_modules_seen"], summary["module_files_on_disk"]))
+    lines.append("")
+    for record in report["prompts"]:
+        if record["class"] == "stable" and not record["fallback_hello"]:
+            continue
+        lines.append("%-15s %s" % (record["class"], record["text"]))
+        lines.append("  modules: %s" % ", ".join(record["modules"]))
+        for reply in record["replies"][:3]:
+            lines.append("  reply:   %s" % (reply[:160] + ("..." if len(reply) > 160 else "")))
+        if len(record["replies"]) > 3:
+            lines.append("  ... %d more distinct replies" % (len(record["replies"]) - 3))
+    return "\n".join(lines)
+
+
+def build_parser():
+    parser = argparse.ArgumentParser(
+        prog="pybot-seed-provenance",
+        description="Measure whether PyBot's --seed changes wording, the answering "
+                    "module, or both, over a corpus of real prompts.")
+    parser.add_argument("--corpus", required=True, help="one prompt per line; blank and # lines skipped")
+    parser.add_argument("--pybot-root", required=True,
+                        help="checkout of huggingface/pybot (the directory holding bot/)")
+    parser.add_argument("--seeds", default="0,1,2,3", help="comma separated seeds (default 0,1,2,3)")
+    parser.add_argument("--repeat", type=int, default=1,
+                        help="rerun each seed N times to check single-seed reproducibility")
+    parser.add_argument("--runner", default="python3 -m pybot",
+                        help="command used to start PyBot (default: python3 -m pybot)")
+    parser.add_argument("--timeout", type=int, default=180, help="seconds per seed run")
+    parser.add_argument("--json", action="store_true", help="machine readable report on stdout")
+    return parser
+
+
+def main(argv=None):
+    args = build_parser().parse_args(argv)
+    try:
+        seeds = parse_seeds(args.seeds)
+        if args.repeat < 1:
+            raise UsageError("--repeat must be at least 1")
+        report = audit(args.corpus, seeds, args.repeat, args.pybot_root,
+                       args.runner, args.timeout)
+    except UsageError as error:
+        print("error: %s" % error, file=sys.stderr)
+        return 2
+
+    summary = report["summary"]
+    drifted = (summary["drifted"] > 0 or summary["fallback_hello"] > 0
+               or summary["repeat_mismatch"] > 0)
+    if args.json:
+        report["drift"] = drifted
+        print(json.dumps(report, indent=2, ensure_ascii=False))
+    else:
+        print(render_text(report))
+    return 1 if drifted else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

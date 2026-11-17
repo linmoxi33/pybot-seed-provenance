@@ -1,0 +1,9 @@
+pybot-seed-provenance 1.0.0
+corpus: examples/in/prompts.txt (9 prompts)
+seeds: 0,1,2 x 2 repeat(s) = 54 observations
+
+stability    100.0%  (9/9 prompts identical under every seed)
+wording-only 0.0%  (0)  <- all the README claims
+module churn 0.0%  (0)  (0 module-only + 0 module-and-text)
+modules      1 seen / 3 on disk
+

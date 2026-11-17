@@ -1,0 +1,54 @@
+pybot-seed-provenance 1.0.0
+corpus: examples/in/prompts.txt (9 prompts)
+seeds: 0,1,2 x 1 repeat(s) = 27 observations
+
+stability    0.0%  (0/9 prompts identical under every seed)
+wording-only 0.0%  (0)  <- all the README claims
+module churn 100.0%  (9)  (0 module-only + 9 module-and-text)
+modules      3 seen / 3 on disk
+
+module-and-text hi
+  modules: greet, memory, smalltalk
+  reply:   Hello friend.
+  reply:   Hey, good to see you.
+  reply:   Hi there.
+module-and-text how do i get limescale out of my kettle
+  modules: greet, memory, smalltalk
+  reply:   Hello friend.
+  reply:   Hey, good to see you.
+  reply:   Hi there.
+module-and-text how long should i boil an egg
+  modules: greet, memory, smalltalk
+  reply:   Hello friend.
+  reply:   Hey, good to see you.
+  reply:   Hi there.
+module-and-text what's my name
+  modules: greet, memory, smalltalk
+  reply:   Hello friend.
+  reply:   Hey, good to see you.
+  reply:   Hi there.
+module-and-text why do onions make you cry
+  modules: greet, memory, smalltalk
+  reply:   Hello friend.
+  reply:   Hey, good to see you.
+  reply:   Hi there.
+module-and-text what is the capital of australia
+  modules: greet, memory, smalltalk
+  reply:   Hello friend.
+  reply:   Hey, good to see you.
+  reply:   Hi there.
+module-and-text i feel tired all the time
+  modules: greet, memory, smalltalk
+  reply:   Hello friend.
+  reply:   Hey, good to see you.
+  reply:   Hi there.
+module-and-text can you help me write a birthday card
+  modules: greet, memory, smalltalk
+  reply:   Hello friend.
+  reply:   Hey, good to see you.
+  reply:   Hi there.
+module-and-text what should i cook for dinner tonight
+  modules: greet, memory, smalltalk
+  reply:   Hello friend.
+  reply:   Hey, good to see you.
+  reply:   Hi there.

@@ -1,0 +1,181 @@
+{
+  "tool": "pybot-seed-provenance",
+  "version": "1.0.0",
+  "corpus": {
+    "path": "examples/in/prompts.txt",
+    "prompts": 9
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "repeat": 2,
+  "runner": "python3 /home/ubuntu/GitHub/work/trending/pybot-seed-provenance/tests/stub_runner.py",
+  "summary": {
+    "prompts": 9,
+    "observations": 54,
+    "classes": {
+      "stable": 9
+    },
+    "drifted": 0,
+    "stability_rate": 1.0,
+    "wording_only_rate": 0.0,
+    "module_churn_rate": 0.0,
+    "fallback_hello": 0,
+    "repeat_mismatch": 0,
+    "distinct_modules_seen": 1,
+    "module_files_on_disk": 3
+  },
+  "modules": [
+    {
+      "module": "greet",
+      "wins": 54,
+      "prompts": 9,
+      "median_ms": 3,
+      "p95_ms": 3
+    }
+  ],
+  "modules_never_seen": [
+    "arbiter",
+    "smalltalk"
+  ],
+  "prompts": [
+    {
+      "index": 0,
+      "text": "hi",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "greet"
+      ],
+      "replies": [
+        "Hi there."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    },
+    {
+      "index": 1,
+      "text": "how do i get limescale out of my kettle",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "greet"
+      ],
+      "replies": [
+        "Hi there."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    },
+    {
+      "index": 2,
+      "text": "how long should i boil an egg",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "greet"
+      ],
+      "replies": [
+        "Hi there."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    },
+    {
+      "index": 3,
+      "text": "what's my name",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "greet"
+      ],
+      "replies": [
+        "Hi there."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    },
+    {
+      "index": 4,
+      "text": "why do onions make you cry",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "greet"
+      ],
+      "replies": [
+        "Hi there."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    },
+    {
+      "index": 5,
+      "text": "what is the capital of australia",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "greet"
+      ],
+      "replies": [
+        "Hi there."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    },
+    {
+      "index": 6,
+      "text": "i feel tired all the time",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "greet"
+      ],
+      "replies": [
+        "Hi there."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    },
+    {
+      "index": 7,
+      "text": "can you help me write a birthday card",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "greet"
+      ],
+      "replies": [
+        "Hi there."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    },
+    {
+      "index": 8,
+      "text": "what should i cook for dinner tonight",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "greet"
+      ],
+      "replies": [
+        "Hi there."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    }
+  ],
+  "drift": false
+}
