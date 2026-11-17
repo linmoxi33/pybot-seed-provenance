@@ -1,0 +1,300 @@
+{
+  "tool": "pybot-seed-provenance",
+  "version": "1.0.0",
+  "corpus": {
+    "path": "examples/in/prompts.txt",
+    "prompts": 9
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "repeat": 2,
+  "runner": "python3 -m pybot",
+  "summary": {
+    "prompts": 9,
+    "observations": 72,
+    "classes": {
+      "stable": 9
+    },
+    "drifted": 0,
+    "stability_rate": 1.0,
+    "wording_only_rate": 0.0,
+    "module_churn_rate": 0.0,
+    "fallback_hello": 0,
+    "repeat_mismatch": 0,
+    "distinct_modules_seen": 3,
+    "module_files_on_disk": 109
+  },
+  "modules": [
+    {
+      "module": "answers",
+      "wins": 56,
+      "prompts": 7,
+      "median_ms": 1219,
+      "p95_ms": 1765
+    },
+    {
+      "module": "chat",
+      "wins": 8,
+      "prompts": 1,
+      "median_ms": 1601,
+      "p95_ms": 1622
+    },
+    {
+      "module": "memory_store",
+      "wins": 8,
+      "prompts": 1,
+      "median_ms": 5122,
+      "p95_ms": 5227
+    }
+  ],
+  "modules_never_seen": [
+    "a_cake_between_its_layers",
+    "a_check_with_you",
+    "a_count_of_packets",
+    "a_count_said",
+    "a_day_somebody_else_keeps",
+    "a_debt_said_flat",
+    "a_fact_asked_again",
+    "a_figure_beside_the_state",
+    "a_figure_of_a_dish",
+    "a_first_time",
+    "a_habit_is_raised",
+    "a_job_that_is_not_a_diy_job",
+    "a_letter_about_money",
+    "a_limit_over_the_answer",
+    "a_measure_asked_again",
+    "a_number_the_bot_knows",
+    "a_plan_the_thread_holds",
+    "a_question_about_somebody",
+    "a_return_brings_back_the_advice",
+    "a_shock_at_a_bill",
+    "a_thing_being_weighed",
+    "a_thing_wants_doing",
+    "a_will_it_work",
+    "aboutachild",
+    "after_a_lead_in",
+    "already",
+    "an_age_ahead",
+    "arbiter",
+    "attribute_said_again",
+    "bulky",
+    "callback_about",
+    "carers_turn",
+    "chasing_a_body",
+    "chat_replies",
+    "colour_on_the_body",
+    "confusing",
+    "detail_question",
+    "done_ask",
+    "doubt",
+    "dreams",
+    "familyask",
+    "favourites",
+    "figure_asked_again",
+    "first_line_open",
+    "greeting",
+    "grief",
+    "group_ages",
+    "hardpast",
+    "household",
+    "how_long_a_stay",
+    "intent",
+    "invitation",
+    "judge_ask",
+    "keeping",
+    "kid_tally",
+    "live_source",
+    "live_times",
+    "loss",
+    "memory_tables",
+    "my_work",
+    "name_taken_back",
+    "near_me",
+    "night",
+    "no_advice",
+    "nudge",
+    "on_record",
+    "onsubject",
+    "pace",
+    "particles",
+    "recap",
+    "receiving_end",
+    "record_due",
+    "ruled_out",
+    "safety",
+    "safety_cards",
+    "safety_phrases",
+    "safety_tables",
+    "said_back",
+    "said_fact_back",
+    "saving_followup",
+    "since_it_began",
+    "steps",
+    "taking_asked_again",
+    "talkto",
+    "the_detail_the_thread_adds",
+    "the_kind_one_line_up",
+    "the_month_they_have",
+    "the_shape_of_the_answer",
+    "the_trouble_it_has",
+    "the_trouble_named",
+    "the_wait_about_a_body",
+    "their_life",
+    "their_pastime",
+    "their_taste",
+    "theirperson",
+    "thing_i_did_with",
+    "trip_date_said_again",
+    "understand",
+    "urgent",
+    "ward",
+    "what_decides_it",
+    "what_they_said",
+    "where_it_answers",
+    "who_to_see",
+    "words",
+    "years_in"
+  ],
+  "prompts": [
+    {
+      "index": 0,
+      "text": "hi",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "chat"
+      ],
+      "replies": [
+        "Hi there — what do you need?"
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    },
+    {
+      "index": 1,
+      "text": "how do i get limescale out of my kettle",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "answers"
+      ],
+      "replies": [
+        "Half fill the kettle with equal parts water and white vinegar, or a sachet of citric acid, boil it and leave it half an hour, then tip it out and boil fresh water twice before you use it again. In a hard-water area do it every couple of months: the scale forms because hard water leaves calcium behind as it boils, and a thick layer makes the kettle slow and puts a scum on the tea."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    },
+    {
+      "index": 2,
+      "text": "how long should i boil an egg",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "answers"
+      ],
+      "replies": [
+        "Lower eggs into already boiling water: 6 minutes for a runny yolk, 7 for jammy, 9 to 10 for hard boiled. Cool them in cold water for a minute before peeling so the shell comes away cleanly."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    },
+    {
+      "index": 3,
+      "text": "what's my name",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "memory_store"
+      ],
+      "replies": [
+        "You haven't told me your name yet."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    },
+    {
+      "index": 4,
+      "text": "why do onions make you cry",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "answers"
+      ],
+      "replies": [
+        "Cutting an onion breaks its cells and releases a gas that irritates your eyes, so they make tears to wash it away. A sharp knife and a chilled onion release less of it, and the root end holds most of it, so cut that last."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    },
+    {
+      "index": 5,
+      "text": "what is the capital of australia",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "answers"
+      ],
+      "replies": [
+        "Canberra, not Sydney: it was purpose-built as the compromise between Sydney and Melbourne."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    },
+    {
+      "index": 6,
+      "text": "i feel tired all the time",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "answers"
+      ],
+      "replies": [
+        "Most constant tiredness is dull rather than medical: too little sleep, a late screen, alcohol, caffeine after lunch, or no daylight. Give it two weeks of the basics before you assume anything else - the same bedtime and getting-up time every day, twenty minutes outside in the morning, no caffeine after two, and no phone in the bedroom. If it is still there after that, see a GP for a blood test: low iron, an underactive thyroid and low vitamin D are the usual finds, and iron is common and easy to treat, especially for anyone with heavy periods."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    },
+    {
+      "index": 7,
+      "text": "can you help me write a birthday card",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "answers"
+      ],
+      "replies": [
+        "Name one thing you like about them and skip the round-number joke: \"Happy birthday - I still tell people about the night you drove us home at 3am.\" For a colleague or someone you do not know well, a warm plain line is enough (\"Happy birthday - hope you get spoiled\"), and put the money or gift honestly (\"Have a drink on me\")."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    },
+    {
+      "index": 8,
+      "text": "what should i cook for dinner tonight",
+      "class": "stable",
+      "distinct_replies": 1,
+      "distinct_modules": 1,
+      "modules": [
+        "answers"
+      ],
+      "replies": [
+        "Cook one big oven dish rather than several pans: a tray of chicken thighs or sausages with halved potatoes, peppers and onions at 200C (180C fan) for 45 minutes, which does four to six, so count the potatoes yourself. Allow about 200g of meat and a big potato each, add a loaf of bread and a bowl of salad, and write the times down so nothing needs the oven at once. Anything that can be made that morning - a chilli, a stew, a lasagne - just gets reheated, which leaves the day free."
+      ],
+      "fallback_hello": false,
+      "repeat_mismatch": {}
+    }
+  ],
+  "drift": false
+}

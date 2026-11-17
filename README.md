@@ -117,6 +117,34 @@ the fixture-stub shape, used by the tests — see `Limits`.)
 | `1` | drift found: any `wording-only` / `module-only` / `module-and-text`, any `Hello!` fallback, or a seed that did not reproduce |
 | `2` | usage or input error: unreadable/empty corpus, bad `--seeds`, missing `bot/` package, runner failure, or reply/module desync |
 
+## Upstream run (real, 2026-11-18)
+
+Upstream commit `7d63c7fbebb44c7e466e5c8b5c1f341ab767929e`, `python3 -m pybot -s <seed> -v`, corpus
+`examples/in/prompts.txt` (9 prompts), seeds 0–3, `--repeat 2`:
+
+```
+python3 bin/pybot-seed-provenance --corpus examples/in/prompts.txt \
+  --pybot-root /tmp/pybot --seeds 0,1,2,3 --repeat 2 --json
+```
+
+Result (`examples/out/upstream-report.json`, 72 turns, 2 m 37 s wall clock):
+
+| Metric | Value |
+|---|---|
+| stable / wording-only / module-only / module-and-text | 9 / 0 / 0 / 0 |
+| fallback `Hello!` replies | 0 |
+| seeds that failed to reproduce themselves (`--repeat 2`) | 0 |
+| distinct modules that won | 3 of 109 on disk |
+| median turn time, `answers` (7 prompts) | 1219 ms (p95 1765 ms) |
+| median turn time, `memory_store` (1 prompt) | 5122 ms (p95 5227 ms) |
+
+**This is a negative result, and it is reported as one**: on these nine prompts the seed changed
+neither the wording nor the winning module. So the upstream claim is not contradicted here — but it
+is also not confirmed in general: only 3 of 109 modules were reached, so the seed-sensitive paths (if
+any) were not exercised. The tool is what turns that "we don't know" into a bounded statement, and a
+larger corpus is the way to widen the bound. The one number that stands out is the cost spread:
+`memory_store` turns take ~4x the median `answers` turn.
+
 ## Tests
 
 ```sh
@@ -136,9 +164,11 @@ check something to read.
   say *why* the arbiter changed its mind.
 - **Wall-clock numbers are PyBot's own.** `median_ms` / `p95_ms` are the per-turn timings that
   `-v` prints, rounded to whole milliseconds by upstream.
-- **The fixture tests prove the classifier, not upstream behaviour.** Numbers in `examples/out/`
-  come from `tests/stub_runner.py`. Upstream numbers, if present, are labelled with the commit and
-  command that produced them.
+- **Which numbers are real.** `examples/out/report.txt`, `report.json` and `drift.txt` come from
+  `tests/stub_runner.py` (fixtures). `examples/out/upstream-report.json` is a real run against the
+  upstream commit named above; that is the only file whose numbers describe PyBot.
+- **9 prompts is a bound, not a survey.** It reaches 3 of 109 modules; do not read the 100%
+  stability above as "the seed never matters".
 - No upstream checkout is vendored here: the tool needs `--pybot-root`, so the repository stays small
   and the upstream version you audit is the one you pin.
 
